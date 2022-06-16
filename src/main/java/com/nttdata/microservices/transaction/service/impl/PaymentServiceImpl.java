@@ -32,14 +32,26 @@ public class PaymentServiceImpl implements PaymentService {
   private final CreditMapper creditMapper;
 
   @Override
+  public Flux<PaymentDto> findAll() {
+    return paymentRepository.findAll()
+            .map(paymentMapper::toDto);
+  }
+
+  @Override
   public Mono<PaymentDto> findById(String id) {
     return paymentRepository.findById(id)
             .map(paymentMapper::toDto);
   }
 
   @Override
-  public Flux<PaymentDto> findByCreditId(String creditId) {
+  public Flux<PaymentDto> findByCreditAccountId(String creditId) {
     return paymentRepository.findByCreditId(creditId)
+            .map(paymentMapper::toDto);
+  }
+
+  @Override
+  public Flux<PaymentDto> findByCreditAccountNumber(String accountNumber) {
+    return paymentRepository.findByCreditAccountNumber(accountNumber)
             .map(paymentMapper::toDto);
   }
 

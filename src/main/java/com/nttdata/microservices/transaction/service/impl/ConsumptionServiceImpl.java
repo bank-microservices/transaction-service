@@ -37,15 +37,26 @@ public class ConsumptionServiceImpl implements ConsumptionService {
   private final CreditMapper creditMapper;
 
   @Override
-  public Mono<ConsumptionDto> findById(String id) {
-    return consumptionRepository.findById(id)
+  public Flux<ConsumptionDto> findAll() {
+    return consumptionRepository.findAll()
             .map(consumptionMapper::toDto);
-
   }
 
   @Override
-  public Flux<ConsumptionDto> findByCreditId(String creditId) {
+  public Mono<ConsumptionDto> findById(String id) {
+    return consumptionRepository.findById(id)
+            .map(consumptionMapper::toDto);
+  }
+
+  @Override
+  public Flux<ConsumptionDto> findByCreditAccountId(String creditId) {
     return consumptionRepository.findByCreditId(creditId)
+            .map(consumptionMapper::toDto);
+  }
+
+  @Override
+  public Flux<ConsumptionDto> findByCreditAccountNumber(String accountNumber) {
+    return consumptionRepository.findByCreditAccountNumber(accountNumber)
             .map(consumptionMapper::toDto);
   }
 

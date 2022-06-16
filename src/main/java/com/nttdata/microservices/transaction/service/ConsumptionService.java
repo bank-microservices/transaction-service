@@ -6,9 +6,13 @@ import reactor.core.publisher.Mono;
 
 public interface ConsumptionService {
 
+  Flux<ConsumptionDto> findAll();
+
   Mono<ConsumptionDto> findById(String id);
 
-  Flux<ConsumptionDto> findByCreditId(String creditId);
+  Flux<ConsumptionDto> findByCreditAccountId(String creditId);
+
+  Flux<ConsumptionDto> findByCreditAccountNumber(String accountNumber);
 
   Mono<ConsumptionDto> addConsumption(ConsumptionDto consumptionDto);
 

@@ -6,9 +6,13 @@ import reactor.core.publisher.Mono;
 
 public interface PaymentService {
 
+  Flux<PaymentDto> findAll();
+
   Mono<PaymentDto> findById(String id);
 
-  Flux<PaymentDto> findByCreditId(String creditId);
+  Flux<PaymentDto> findByCreditAccountId(String creditId);
+
+  Flux<PaymentDto> findByCreditAccountNumber(String accountNumber);
 
   Mono<PaymentDto> creditPayment(PaymentDto paymentDto);
 }
