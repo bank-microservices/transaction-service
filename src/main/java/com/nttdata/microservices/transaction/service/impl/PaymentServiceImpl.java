@@ -61,7 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
             .flatMap(this::existCreditAccount)
             .map(paymentMapper::toEntity)
             .map(payment -> {
-              payment.setPaymentDate(LocalDateTime.now());
+              payment.setRegisterDate(LocalDateTime.now());
               payment.setTransactionCode(NumberUtil.generateRandomNumber(8));
               return payment;
             })

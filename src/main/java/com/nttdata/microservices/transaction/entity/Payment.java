@@ -22,6 +22,6 @@ public class Payment extends AbstractAuditingEntity {
 
   private Credit credit;
 
-  private LocalDateTime paymentDate;
+  private LocalDateTime registerDate;
 
 }

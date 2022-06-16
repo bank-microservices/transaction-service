@@ -34,6 +34,6 @@ public class PaymentDto {
   private CreditDto credit;
 
   @JsonProperty(access = READ_ONLY)
-  private LocalDateTime paymentDate;
+  private LocalDateTime registerDate;
 
 }

@@ -2,6 +2,7 @@ package com.nttdata.microservices.transaction.service.impl;
 
 import com.nttdata.microservices.transaction.entity.TransactionType;
 import com.nttdata.microservices.transaction.exception.AccountNotFoundException;
+import com.nttdata.microservices.transaction.exception.BadRequestException;
 import com.nttdata.microservices.transaction.proxy.AccountProxy;
 import com.nttdata.microservices.transaction.repository.TransactionRepository;
 import com.nttdata.microservices.transaction.service.TransactionService;
@@ -68,6 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
   public Mono<TransactionDto> withdraw(TransactionDto transactionDto) {
     return Mono.just(transactionDto)
             .flatMap(this::existAccount)
+            .flatMap(this::validateBalance)
             .map(txMapper::toEntity)
             .map(entity -> {
               entity.setRegisterDate(LocalDateTime.now());
@@ -86,6 +88,20 @@ public class TransactionServiceImpl implements TransactionService {
             .switchIfEmpty(Mono.error(new AccountNotFoundException(getMsg("account.not.found"))))
             .doOnNext(transactionDto::setAccount)
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+            .thenReturn(transactionDto);
+  }
+
+  private Mono<TransactionDto> validateBalance(TransactionDto transactionDto) {
+    return Mono.just(transactionDto)
+            .<TransactionDto>handle((dto, sink) -> {
+              final Double amountAccount = dto.getAccount().getAmount();
+              if (dto.getAmount() > amountAccount) {
+                sink.error(new BadRequestException(getMsg("account.balance.not.available",
+                        dto.getAccountNumber(), dto.getAmount())));
+              } else {
+                sink.complete();
+              }
+            })
             .thenReturn(transactionDto);
   }
 
