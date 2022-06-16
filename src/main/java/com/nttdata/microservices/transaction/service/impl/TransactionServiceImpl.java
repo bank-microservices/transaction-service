@@ -92,6 +92,7 @@ public class TransactionServiceImpl implements TransactionService {
   private Mono<TransactionDto> updateAccountAmount(TransactionDto transactionDto) {
     final double amount = transactionDto.getTransactionType().isDeposit() ?
             transactionDto.getAmount() : transactionDto.getAmount() * -1;
+
     return this.accountProxy.updateAccountAmount(transactionDto.getAccount().getId(), amount)
             .doOnNext(transactionDto::setAccount)
             .thenReturn(transactionDto);

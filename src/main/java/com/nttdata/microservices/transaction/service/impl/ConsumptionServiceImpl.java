@@ -2,7 +2,8 @@ package com.nttdata.microservices.transaction.service.impl;
 
 import com.nttdata.microservices.transaction.entity.Consumption;
 import com.nttdata.microservices.transaction.exception.BadRequestException;
-import com.nttdata.microservices.transaction.exception.DataValidationException;
+import com.nttdata.microservices.transaction.exception.CreditCardNotFoundException;
+import com.nttdata.microservices.transaction.exception.CreditNotFoundException;
 import com.nttdata.microservices.transaction.proxy.CreditProxy;
 import com.nttdata.microservices.transaction.repository.ConsumptionRepository;
 import com.nttdata.microservices.transaction.service.ConsumptionService;
@@ -20,6 +21,8 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+
+import static com.nttdata.microservices.transaction.util.MessageUtils.getMsg;
 
 @Slf4j
 @Service
@@ -56,7 +59,7 @@ public class ConsumptionServiceImpl implements ConsumptionService {
               log.debug("Consumption values: {}", consumption);
               Double creditAmountTotal = Double.sum(consumption.getCredit().getAmount(), consumption.getAmount());
               if (creditAmountTotal > consumption.getCredit().getCreditLimit()) {
-                sink.error(new BadRequestException(String.format("Insufficient credit line for charge: %s, being your credit limit: %s", creditAmountTotal, consumption.getAmount())));
+                sink.error(new BadRequestException(getMsg("credit.exceeded.limit", creditAmountTotal, consumption.getAmount())));
               } else {
                 sink.next(consumption);
               }
@@ -74,7 +77,7 @@ public class ConsumptionServiceImpl implements ConsumptionService {
 
   private Mono<ConsumptionDto> existCreditCard(ConsumptionDto consumptionDto) {
     return this.creditProxy.findCreditCardByAccountNumber(consumptionDto.getAccountNumber())
-            .switchIfEmpty(Mono.error(new DataValidationException("Credit Card not found")))
+            .switchIfEmpty(Mono.error(new CreditCardNotFoundException(getMsg("credit.card.not.found"))))
             .doOnNext(consumptionDto::setCreditCard)
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
             .thenReturn(consumptionDto);
@@ -82,7 +85,7 @@ public class ConsumptionServiceImpl implements ConsumptionService {
 
   private Mono<ConsumptionDto> existCreditAccount(ConsumptionDto consumptionDto) {
     return this.creditProxy.findByAccountNumber(consumptionDto.getAccountNumber())
-            .switchIfEmpty(Mono.error(new DataValidationException("Credit not found")))
+            .switchIfEmpty(Mono.error(new CreditNotFoundException(getMsg("credit.not.found"))))
             .map(creditMapper::toDto)
             .doOnNext(consumptionDto::setCredit)
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))

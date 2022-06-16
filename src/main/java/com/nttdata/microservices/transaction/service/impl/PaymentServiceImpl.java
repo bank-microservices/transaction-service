@@ -18,6 +18,8 @@ import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import static com.nttdata.microservices.transaction.util.MessageUtils.getMsg;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -59,7 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
 
   private Mono<PaymentDto> existCreditAccount(PaymentDto paymentDto) {
     return this.creditProxy.findByAccountNumber(paymentDto.getAccountNumber())
-            .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found")))
+            .switchIfEmpty(Mono.error(new CreditNotFoundException(getMsg("credit.not.found"))))
             .map(creditMapper::toDto)
             .doOnNext(paymentDto::setCredit)
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))

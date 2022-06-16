@@ -3,6 +3,7 @@ package com.nttdata.microservices.transaction.exceptionhandler;
 import com.nttdata.microservices.transaction.exception.AccountNotFoundException;
 import com.nttdata.microservices.transaction.exception.BadRequestException;
 import com.nttdata.microservices.transaction.exception.ClientNotFoundException;
+import com.nttdata.microservices.transaction.exception.CreditCardNotFoundException;
 import com.nttdata.microservices.transaction.exception.CreditNotFoundException;
 import com.nttdata.microservices.transaction.exception.DataValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,13 @@ public class GlobalErrorHandler {
   @ExceptionHandler(CreditNotFoundException.class)
   public ResponseEntity<String> handleCreditException(CreditNotFoundException ex) {
     log.error("Exception caught in handleCreditException :  {} ", ex.getMessage(), ex);
+    log.info("Status value is : {}", ex.getStatusCode());
+    return ResponseEntity.status(HttpStatus.valueOf(ex.getStatusCode())).body(ex.getMessage());
+  }
+
+  @ExceptionHandler(CreditCardNotFoundException.class)
+  public ResponseEntity<String> handleCreditException(CreditCardNotFoundException ex) {
+    log.error("Exception caught in handleCreditCardException :  {} ", ex.getMessage(), ex);
     log.info("Status value is : {}", ex.getStatusCode());
     return ResponseEntity.status(HttpStatus.valueOf(ex.getStatusCode())).body(ex.getMessage());
   }
