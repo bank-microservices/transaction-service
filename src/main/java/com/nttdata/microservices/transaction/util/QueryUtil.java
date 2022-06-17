@@ -14,7 +14,8 @@ public class QueryUtil {
   public static Aggregation getAggregationSum(String creditId) {
     LookupOperation lookup = Aggregation.lookup("credit", "creditId", "_id", "credit");
     UnwindOperation unwindOperation = new UnwindOperation(Fields.field("$credit"));
-    MatchOperation matchStage = Aggregation.match(Criteria.where("creditId").is(new ObjectId(creditId)));
+    MatchOperation matchStage =
+        Aggregation.match(Criteria.where("creditId").is(new ObjectId(creditId)));
     GroupOperation sumOperation = Aggregation.group().sum("amount").as("total");
     return Aggregation.newAggregation(matchStage, lookup, unwindOperation, sumOperation);
   }

@@ -1,12 +1,11 @@
 package com.nttdata.microservices.transaction.entity;
 
 import com.nttdata.microservices.transaction.entity.credit.Credit;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor

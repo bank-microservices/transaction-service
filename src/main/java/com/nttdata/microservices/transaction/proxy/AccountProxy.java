@@ -7,7 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface AccountProxy {
 
-  Flux<AccountDto> findByAccountNumberAndClientDocument(String accountNumber, String documentNumber);
+  Flux<AccountDto> findByAccountNumberAndClientDocument(String accountNumber,
+                                                        String documentNumber);
 
   Mono<AccountDto> findByAccountNumber(String accountNumber);
 

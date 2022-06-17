@@ -2,6 +2,7 @@ package com.nttdata.microservices.transaction.controller;
 
 import com.nttdata.microservices.transaction.service.ConsumptionService;
 import com.nttdata.microservices.transaction.service.dto.ConsumptionDto;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,6 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -47,19 +46,22 @@ public class ConsumptionController {
   }
 
   @GetMapping("/credit-number/{account-number}")
-  public Flux<ConsumptionDto> findByCreditAccountNumber(@PathVariable("account-number") String accountNumber) {
+  public Flux<ConsumptionDto> findByCreditAccountNumber(
+      @PathVariable("account-number") String accountNumber) {
     log.info("find by accountNumber of Consumptions");
     return consumptionService.findByCreditAccountNumber(accountNumber);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public Mono<ResponseEntity<ConsumptionDto>> addConsumption(@Valid @RequestBody ConsumptionDto consumptionDto) {
+  public Mono<ResponseEntity<ConsumptionDto>> addConsumption(
+      @Valid @RequestBody ConsumptionDto consumptionDto) {
     log.info("Request of add Consumption");
     return consumptionService.addConsumption(consumptionDto)
-            .map(ResponseEntity::ok)
-            .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
-            .onErrorReturn(WebClientRequestException.class, ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+        .map(ResponseEntity::ok)
+        .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
+        .onErrorReturn(WebClientRequestException.class,
+            ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
   }
 
 }

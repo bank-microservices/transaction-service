@@ -2,6 +2,7 @@ package com.nttdata.microservices.transaction.controller;
 
 import com.nttdata.microservices.transaction.service.PaymentService;
 import com.nttdata.microservices.transaction.service.dto.PaymentDto;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,6 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -47,7 +46,8 @@ public class PaymentController {
   }
 
   @GetMapping("/credit-number/{account-number}")
-  public Flux<PaymentDto> findByCreditAccountNumber(@PathVariable("account-number") String accountNumber) {
+  public Flux<PaymentDto> findByCreditAccountNumber(
+      @PathVariable("account-number") String accountNumber) {
     log.info("find by accountNumber of Payments");
     return paymentService.findByCreditAccountNumber(accountNumber);
   }
@@ -57,9 +57,10 @@ public class PaymentController {
   public Mono<ResponseEntity<PaymentDto>> paidCredit(@Valid @RequestBody PaymentDto paymentDto) {
     log.info("Request of paid Credit");
     return paymentService.creditPayment(paymentDto)
-            .map(ResponseEntity::ok)
-            .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
-            .onErrorReturn(WebClientRequestException.class, ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+        .map(ResponseEntity::ok)
+        .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
+        .onErrorReturn(WebClientRequestException.class,
+            ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
   }
 
 }

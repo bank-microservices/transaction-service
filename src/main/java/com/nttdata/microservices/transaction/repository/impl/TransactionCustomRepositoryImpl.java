@@ -18,7 +18,8 @@ public class TransactionCustomRepositoryImpl implements TransactionCustomReposit
 
   @Override
   public Flux<Transaction> findByAccountNumber(String accountNumber) {
-    MatchOperation match = Aggregation.match(Criteria.where("account.accountNumber").is(accountNumber));
+    MatchOperation match =
+        Aggregation.match(Criteria.where("account.accountNumber").is(accountNumber));
     Aggregation aggregation = Aggregation.newAggregation(match);
     return reactiveMongoTemplate.aggregate(aggregation, Transaction.class, Transaction.class);
   }

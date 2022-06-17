@@ -3,11 +3,10 @@ package com.nttdata.microservices.transaction.repository.impl;
 import com.nttdata.microservices.transaction.entity.Payment;
 import com.nttdata.microservices.transaction.repository.PaymentCustomRepository;
 import com.nttdata.microservices.transaction.util.QueryUtil;
+import java.util.Map;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import reactor.core.publisher.Mono;
-
-import java.util.Map;
 
 public class PaymentCustomRepositoryImpl implements PaymentCustomRepository {
 
@@ -21,7 +20,7 @@ public class PaymentCustomRepositoryImpl implements PaymentCustomRepository {
   public Mono<Double> getSumByCreditId(String creditId) {
     Aggregation aggregation = QueryUtil.getAggregationSum(creditId);
     return reactiveMongoTemplate.aggregate(aggregation, Payment.class, Map.class)
-            .map((row) -> (Double) row.get("total"))
-            .singleOrEmpty();
+        .map((row) -> (Double) row.get("total"))
+        .singleOrEmpty();
   }
 }

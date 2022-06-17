@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 @Repository
-public interface ConsumptionRepository extends ReactiveMongoRepository<Consumption, String>, ConsumptionCustomRepository {
+public interface ConsumptionRepository
+    extends ReactiveMongoRepository<Consumption, String>, ConsumptionCustomRepository {
 
   @Aggregation(pipeline = {"{'$match':{'credit._id':?0}}"})
   Flux<Consumption> findByCreditId(String id);
