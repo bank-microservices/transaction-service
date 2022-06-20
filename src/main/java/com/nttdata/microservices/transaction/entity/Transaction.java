@@ -2,6 +2,7 @@ package com.nttdata.microservices.transaction.entity;
 
 import com.nttdata.microservices.transaction.entity.account.Account;
 import java.time.LocalDateTime;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,10 @@ public class Transaction extends AbstractAuditingEntity {
   private String transactionCode;
   private TransactionType transactionType;
   private Double amount;
+
+  @Valid
   private Account account;
+
   private LocalDateTime registerDate;
 
 }

@@ -30,7 +30,7 @@ public class PaymentDto {
   private String id;
 
   @JsonProperty(access = READ_ONLY)
-  private CreditDto credit;
+  private CreditProductDto creditProduct;
 
   @JsonProperty(access = READ_ONLY)
   private LocalDateTime registerDate;

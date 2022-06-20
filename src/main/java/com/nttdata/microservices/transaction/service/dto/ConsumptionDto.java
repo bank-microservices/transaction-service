@@ -4,7 +4,6 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.nttdata.microservices.transaction.entity.credit.CreditCard;
 import java.time.LocalDateTime;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -29,10 +28,7 @@ public class ConsumptionDto {
   private String transactionCode;
 
   @JsonProperty(access = READ_ONLY)
-  private CreditDto credit;
-
-  @JsonProperty(access = READ_ONLY)
-  private CreditCard creditCard;
+  private CreditProductDto creditCard;
 
   @JsonProperty(access = READ_ONLY)
   private LocalDateTime registerDate;

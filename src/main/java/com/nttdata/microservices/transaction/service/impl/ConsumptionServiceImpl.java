@@ -5,18 +5,18 @@ import static com.nttdata.microservices.transaction.util.MessageUtils.getMsg;
 import com.nttdata.microservices.transaction.entity.Consumption;
 import com.nttdata.microservices.transaction.exception.BadRequestException;
 import com.nttdata.microservices.transaction.exception.CreditCardNotFoundException;
-import com.nttdata.microservices.transaction.exception.CreditNotFoundException;
-import com.nttdata.microservices.transaction.proxy.CreditProxy;
+import com.nttdata.microservices.transaction.proxy.CreditProductProxy;
 import com.nttdata.microservices.transaction.repository.ConsumptionRepository;
 import com.nttdata.microservices.transaction.service.ConsumptionService;
 import com.nttdata.microservices.transaction.service.dto.ConsumptionDto;
 import com.nttdata.microservices.transaction.service.mapper.ConsumptionMapper;
-import com.nttdata.microservices.transaction.service.mapper.CreditMapper;
+import com.nttdata.microservices.transaction.service.mapper.CreditProductMapper;
 import com.nttdata.microservices.transaction.util.NumberUtil;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,10 +30,10 @@ public class ConsumptionServiceImpl implements ConsumptionService {
 
   private final ConsumptionRepository consumptionRepository;
 
-  private final CreditProxy creditProxy;
+  private final CreditProductProxy creditProductProxy;
 
   private final ConsumptionMapper consumptionMapper;
-  private final CreditMapper creditMapper;
+  private final CreditProductMapper creditProductMapper;
 
   @Override
   public Flux<ConsumptionDto> findAll() {
@@ -62,16 +62,17 @@ public class ConsumptionServiceImpl implements ConsumptionService {
   @Override
   public Mono<ConsumptionDto> addConsumption(ConsumptionDto consumptionDto) {
     return Mono.just(consumptionDto)
-        .flatMap(this::existCreditAccount)
         .flatMap(this::existCreditCard)
         .map(consumptionMapper::toEntity)
         .<Consumption>handle((consumption, sink) -> {
           log.debug("Consumption values: {}", consumption);
-          Double creditAmountTotal =
-              Double.sum(consumption.getCredit().getAmount(), consumption.getAmount());
-          if (creditAmountTotal > consumption.getCredit().getCreditLimit()) {
-            sink.error(new BadRequestException(
-                getMsg("credit.exceeded.limit", creditAmountTotal, consumption.getAmount())));
+          Double creditAmountTotal = Double.sum(
+              ObjectUtils.defaultIfNull(consumption.getCreditCard().getAmount(), 0D),
+              consumption.getAmount());
+          if (creditAmountTotal > consumption.getCreditCard().getCreditLimit()) {
+            sink.error(new BadRequestException(getMsg("credit.exceeded.limit",
+                creditAmountTotal,
+                consumption.getAmount())));
           } else {
             sink.next(consumption);
           }
@@ -88,26 +89,19 @@ public class ConsumptionServiceImpl implements ConsumptionService {
   }
 
   private Mono<ConsumptionDto> existCreditCard(ConsumptionDto consumptionDto) {
-    return this.creditProxy.findCreditCardByAccountNumber(consumptionDto.getAccountNumber())
+    return this.creditProductProxy.findCreditCardByAccountNumber(consumptionDto.getAccountNumber())
         .switchIfEmpty(Mono.error(new CreditCardNotFoundException(getMsg("credit.card.not.found"))))
+        .map(creditProductMapper::toDto)
         .doOnNext(consumptionDto::setCreditCard)
         .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
         .thenReturn(consumptionDto);
   }
 
-  private Mono<ConsumptionDto> existCreditAccount(ConsumptionDto consumptionDto) {
-    return this.creditProxy.findByAccountNumber(consumptionDto.getAccountNumber())
-        .switchIfEmpty(Mono.error(new CreditNotFoundException(getMsg("credit.not.found"))))
-        .map(creditMapper::toDto)
-        .doOnNext(consumptionDto::setCredit)
-        .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-        .thenReturn(consumptionDto);
-  }
-
   private Mono<ConsumptionDto> updateCreditAmount(ConsumptionDto consumptionDto) {
-    return this.creditProxy.updateAmount(consumptionDto.getCredit().getId(),
+    return this.creditProductProxy.updateCreditCardAmount(consumptionDto.getCreditCard().getId(),
             consumptionDto.getAmount())
-        .doOnNext(consumptionDto::setCredit)
+        .map(creditProductMapper::toDto)
+        .doOnNext(consumptionDto::setCreditCard)
         .thenReturn(consumptionDto);
   }
 

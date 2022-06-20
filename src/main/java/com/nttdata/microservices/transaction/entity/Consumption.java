@@ -1,8 +1,8 @@
 package com.nttdata.microservices.transaction.entity;
 
-import com.nttdata.microservices.transaction.entity.credit.Credit;
-import com.nttdata.microservices.transaction.entity.credit.CreditCard;
+import com.nttdata.microservices.transaction.entity.credit.CreditProduct;
 import java.time.LocalDateTime;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,9 +22,8 @@ public class Consumption extends AbstractAuditingEntity {
 
   private Double amount;
 
-  private CreditCard creditCard;
-
-  private Credit credit;
+  @Valid
+  private CreditProduct creditCard;
 
   private LocalDateTime registerDate;
 

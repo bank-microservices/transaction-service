@@ -2,12 +2,12 @@ package com.nttdata.microservices.transaction.service.impl;
 
 import static com.nttdata.microservices.transaction.util.MessageUtils.getMsg;
 
-import com.nttdata.microservices.transaction.exception.CreditNotFoundException;
-import com.nttdata.microservices.transaction.proxy.CreditProxy;
+import com.nttdata.microservices.transaction.exception.BadRequestException;
+import com.nttdata.microservices.transaction.proxy.CreditProductProxy;
 import com.nttdata.microservices.transaction.repository.PaymentRepository;
 import com.nttdata.microservices.transaction.service.PaymentService;
 import com.nttdata.microservices.transaction.service.dto.PaymentDto;
-import com.nttdata.microservices.transaction.service.mapper.CreditMapper;
+import com.nttdata.microservices.transaction.service.mapper.CreditProductMapper;
 import com.nttdata.microservices.transaction.service.mapper.PaymentMapper;
 import com.nttdata.microservices.transaction.util.NumberUtil;
 import java.time.Duration;
@@ -25,10 +25,10 @@ public class PaymentServiceImpl implements PaymentService {
 
   private final PaymentRepository paymentRepository;
 
-  private final CreditProxy creditProxy;
+  private final CreditProductProxy creditProductProxy;
 
   private final PaymentMapper paymentMapper;
-  private final CreditMapper creditMapper;
+  private final CreditProductMapper creditProductMapper;
 
   @Override
   public Flux<PaymentDto> findAll() {
@@ -57,7 +57,16 @@ public class PaymentServiceImpl implements PaymentService {
   @Override
   public Mono<PaymentDto> creditPayment(PaymentDto paymentDto) {
     return Mono.just(paymentDto)
-        .flatMap(this::existCreditAccount)
+        .flatMap(this::existCreditProduct)
+        .<PaymentDto>handle((dto, sink) -> {
+          final Double creditAmount = dto.getCreditProduct().getAmount();
+          if (dto.getAmount() > creditAmount) {
+            sink.error(new BadRequestException(getMsg("payment.amount.exceed",
+                dto.getAmount(), creditAmount)));
+          } else {
+            sink.next(dto);
+          }
+        })
         .map(paymentMapper::toEntity)
         .map(payment -> {
           payment.setRegisterDate(LocalDateTime.now());
@@ -70,19 +79,22 @@ public class PaymentServiceImpl implements PaymentService {
         .subscribeOn(Schedulers.boundedElastic());
   }
 
-  private Mono<PaymentDto> existCreditAccount(PaymentDto paymentDto) {
-    return this.creditProxy.findByAccountNumber(paymentDto.getAccountNumber())
-        .switchIfEmpty(Mono.error(new CreditNotFoundException(getMsg("credit.not.found"))))
-        .map(creditMapper::toDto)
-        .doOnNext(paymentDto::setCredit)
+  private Mono<PaymentDto> existCreditProduct(PaymentDto paymentDto) {
+    return creditProductProxy.findCreditOrCardByAccountNumber(paymentDto.getAccountNumber())
+        .map(creditProductMapper::toDto)
+        .doOnNext(paymentDto::setCreditProduct)
         .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
         .thenReturn(paymentDto);
   }
 
   private Mono<PaymentDto> updateCreditAmount(PaymentDto paymentDto) {
-    return this.creditProxy.updateAmount(paymentDto.getCredit().getId(),
-            paymentDto.getAmount() * -1)
-        .doOnNext(paymentDto::setCredit)
+    return Mono.just(paymentDto)
+        .flatMap(
+            dto -> this.creditProductProxy.updateCreditProductAmount(dto.getCreditProduct().getId(),
+                paymentDto.getAmount() * -1,
+                dto.getCreditProduct().getCreditProductType()))
+        .map(creditProductMapper::toDto)
+        .doOnNext(paymentDto::setCreditProduct)
         .thenReturn(paymentDto);
   }
 

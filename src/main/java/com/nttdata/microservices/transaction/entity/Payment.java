@@ -1,7 +1,8 @@
 package com.nttdata.microservices.transaction.entity;
 
-import com.nttdata.microservices.transaction.entity.credit.Credit;
+import com.nttdata.microservices.transaction.entity.credit.CreditProduct;
 import java.time.LocalDateTime;
+import javax.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -19,7 +20,8 @@ public class Payment extends AbstractAuditingEntity {
 
   private Double amount;
 
-  private Credit credit;
+  @Valid
+  private CreditProduct creditProduct;
 
   private LocalDateTime registerDate;
 
