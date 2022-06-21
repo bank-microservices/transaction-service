@@ -81,6 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
           if (dto.getAccountNumber().equals(transferDto.getSourceAccountNumber())) {
             return Mono.just(dto)
                 .flatMap(this::validateBalance)
+                .flatMap(this::validateTransactionsOfMonth)
                 .flatMap(transDto -> this.transaction(transDto, TransactionType.WITHDRAWAL));
           } else {
             return Mono.just(dto)
@@ -95,6 +96,12 @@ public class TransactionServiceImpl implements TransactionService {
     return Mono.just(transactionDto)
         .map(txMapper::toEntity)
         .map(entity -> {
+
+          if(entity.getTransactionFee() == null){
+            entity.setTransactionFee(0D);
+            entity.setTotalAmount(entity.getAmount());
+          }
+
           entity.setRegisterDate(LocalDateTime.now());
           entity.setTransactionCode(NumberUtil.generateRandomNumber(8));
           entity.setTransactionType(transactionType);
