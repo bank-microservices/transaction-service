@@ -20,6 +20,8 @@ public class Transaction extends AbstractAuditingEntity {
   private String transactionCode;
   private TransactionType transactionType;
   private Double amount;
+  private Double transactionFee;
+  private Double totalAmount;
 
   @Valid
   private Account account;

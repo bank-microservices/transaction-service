@@ -2,6 +2,7 @@ package com.nttdata.microservices.transaction.controller;
 
 import com.nttdata.microservices.transaction.service.TransactionService;
 import com.nttdata.microservices.transaction.service.dto.TransactionDto;
+import com.nttdata.microservices.transaction.service.dto.TransactionTransferRequestDto;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,13 @@ public class TransactionController {
         .onErrorReturn(WebClientResponseException.class, ResponseEntity.badRequest().build())
         .onErrorReturn(WebClientRequestException.class,
             ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+  }
+
+  @PostMapping("/transfer")
+  @ResponseStatus(HttpStatus.CREATED)
+  public Flux<TransactionDto> transfer(
+      @Valid @RequestBody TransactionTransferRequestDto transactionDto) {
+    return transactionService.transfer(transactionDto);
   }
 
   @GetMapping("/account/{account-id}")

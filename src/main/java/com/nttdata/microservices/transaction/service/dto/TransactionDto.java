@@ -9,10 +9,14 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDto {
 
@@ -38,5 +42,11 @@ public class TransactionDto {
 
   @JsonProperty(access = READ_ONLY)
   private LocalDateTime registerDate;
+
+  @JsonProperty(access = READ_ONLY)
+  private Double transactionFee;
+
+  @JsonProperty(access = READ_ONLY)
+  private Double totalAmount;
 
 }

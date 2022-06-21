@@ -25,5 +25,9 @@ public class Account {
   private boolean status;
   @ReadOnlyProperty
   private Double maintenanceFee;
+  @ReadOnlyProperty
+  private Double transactionFee;
+  @ReadOnlyProperty
+  private Integer maxLimitMonthlyMovements;
 
 }

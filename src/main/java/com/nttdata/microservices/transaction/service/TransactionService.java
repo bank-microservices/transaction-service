@@ -1,6 +1,7 @@
 package com.nttdata.microservices.transaction.service;
 
 import com.nttdata.microservices.transaction.service.dto.TransactionDto;
+import com.nttdata.microservices.transaction.service.dto.TransactionTransferRequestDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -16,4 +17,5 @@ public interface TransactionService {
 
   Mono<TransactionDto> withdraw(TransactionDto transactionDto);
 
+  Flux<TransactionDto> transfer(TransactionTransferRequestDto transferDto);
 }

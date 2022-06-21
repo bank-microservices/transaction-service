@@ -8,4 +8,8 @@ public interface TransactionCustomRepository {
   Flux<Transaction> findByAccountNumber(String accountNumber);
 
   Flux<Transaction> findByAccountId(String accountId);
+
+  Flux<Transaction> findTransactionsMonthByAccountNumber(String accountNumber,
+                                                         Integer month,
+                                                         Integer year);
 }

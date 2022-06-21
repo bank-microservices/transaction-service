@@ -9,6 +9,8 @@ public class AccountDto {
   private String accountNumber;
   private String cci;
   private Double maintenanceFee;
+  private Double transactionFee;
+  private Integer maxLimitMonthlyMovements;
   private Double amount;
   private ClientDto client;
   private AccountType accountType;
