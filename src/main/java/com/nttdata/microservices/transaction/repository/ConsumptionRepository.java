@@ -10,9 +10,9 @@ import reactor.core.publisher.Flux;
 public interface ConsumptionRepository
     extends ReactiveMongoRepository<Consumption, String>, ConsumptionCustomRepository {
 
-  @Aggregation(pipeline = {"{'$match':{'credit._id':?0}}"})
+  @Aggregation(pipeline = {"{'$match':{'creditCard._id':?0}}"})
   Flux<Consumption> findByCreditId(String id);
 
-  @Aggregation(pipeline = {"{'$match':{'credit.accountNumber':?0}}"})
+  @Aggregation(pipeline = {"{'$match':{'creditCard.accountNumber':?0}}"})
   Flux<Consumption> findByCreditAccountNumber(String accountNumber);
 }
