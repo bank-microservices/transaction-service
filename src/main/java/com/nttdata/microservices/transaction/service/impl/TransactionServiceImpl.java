@@ -16,6 +16,7 @@ import com.nttdata.microservices.transaction.util.NumberUtil;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -92,12 +93,12 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private Mono<TransactionDto> transaction(TransactionDto transactionDto,
-                                           TransactionType transactionType) {
+      TransactionType transactionType) {
     return Mono.just(transactionDto)
         .map(txMapper::toEntity)
         .map(entity -> {
 
-          if(entity.getTransactionFee() == null){
+          if (entity.getTransactionFee() == null) {
             entity.setTransactionFee(0D);
             entity.setTotalAmount(entity.getAmount());
           }
@@ -159,13 +160,18 @@ public class TransactionServiceImpl implements TransactionService {
           final AccountDto account = dto.getAccount();
           if (countTx >= account.getMaxLimitMonthlyMovements()) {
 
-            final double additional = dto.getAmount()
-                * ObjectUtils.defaultIfNull(account.getTransactionFee(), 1D);
+            if (account.getTransactionFee() != null) {
+              final double additional = dto.getAmount()
+                  * ObjectUtils.defaultIfNull(account.getTransactionFee(), 1D);
 
-           final Double totalAmount = Double.sum(dto.getAmount(), additional);
-
-            dto.setTransactionFee(ObjectUtils.defaultIfNull(account.getTransactionFee(), 0D));
-            dto.setTotalAmount(totalAmount);
+              final Double totalAmount = Double.sum(dto.getAmount(), additional);
+              dto.setTransactionFee(additional);
+              dto.setTotalAmount(totalAmount);
+            } else {
+              dto.setTransactionFee(0D);
+              dto.setTotalAmount(dto.getAmount());
+            }
+            
           } else {
             dto.setTransactionFee(0D);
             dto.setTotalAmount(dto.getAmount());
@@ -177,11 +183,21 @@ public class TransactionServiceImpl implements TransactionService {
 
   private Mono<TransactionDto> updateAccountAmount(TransactionDto transactionDto) {
     final double amount = transactionDto.getTransactionType().isDeposit()
-        ? transactionDto.getAmount() : transactionDto.getAmount() * -1;
+        ? transactionDto.getAmount()
+        : transactionDto.getAmount() * -1;
 
     return this.accountProxy.updateAccountAmount(transactionDto.getAccount().getId(), amount)
         .doOnNext(transactionDto::setAccount)
         .thenReturn(transactionDto);
+  }
+
+  @Override
+  public Flux<TransactionDto> findByDateRange(String from, String to) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate fromDate = LocalDate.parse(from, formatter);
+    LocalDate toDate = LocalDate.parse(to, formatter);
+    return txRepository.findByRegisterDateBetween(fromDate, toDate)
+        .map(txMapper::toDto);
   }
 
 }

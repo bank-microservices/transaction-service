@@ -3,11 +3,13 @@ package com.nttdata.microservices.transaction.controller;
 import com.nttdata.microservices.transaction.service.TransactionService;
 import com.nttdata.microservices.transaction.service.dto.TransactionDto;
 import com.nttdata.microservices.transaction.service.dto.TransactionTransferRequestDto;
+import com.nttdata.microservices.transaction.util.validator.ValidDate;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +25,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@Validated
 @RequestMapping("/api/v1/transaction")
 public class TransactionController {
 
@@ -73,5 +76,14 @@ public class TransactionController {
       @PathVariable("account-number") String accountNumber) {
     return transactionService.findByAccountNumber(accountNumber);
   }
+
+  @GetMapping("/date-range/{date-from}/{date-to}")
+  public Flux<TransactionDto> findByDateRange(@PathVariable("date-from")
+                                              @ValidDate String dateFrom,
+                                              @PathVariable("date-to")
+                                              @ValidDate String dateTo) {
+    return transactionService.findByDateRange(dateFrom, dateTo);
+  }
+
 
 }

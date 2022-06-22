@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventL
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @Configuration
-public class MongodbConfiguration {
+public class ValidationConfig {
 
   @Bean
   public ValidatingMongoEventListener validatingMongoEventListener() {

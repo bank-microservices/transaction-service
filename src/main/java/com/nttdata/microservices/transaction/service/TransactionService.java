@@ -18,4 +18,6 @@ public interface TransactionService {
   Mono<TransactionDto> withdraw(TransactionDto transactionDto);
 
   Flux<TransactionDto> transfer(TransactionTransferRequestDto transferDto);
+
+  Flux<TransactionDto> findByDateRange(String from, String to);
 }

@@ -7,6 +7,7 @@ import com.nttdata.microservices.transaction.exception.CreditCardNotFoundExcepti
 import com.nttdata.microservices.transaction.exception.CreditNotFoundException;
 import com.nttdata.microservices.transaction.exception.DataValidationException;
 import java.util.stream.Collectors;
+import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -15,8 +16,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.support.WebExchangeBindException;
 
-@ControllerAdvice
 @Slf4j
+@ControllerAdvice
 public class GlobalErrorHandler {
 
   @ExceptionHandler(WebExchangeBindException.class)
@@ -68,6 +69,12 @@ public class GlobalErrorHandler {
   public ResponseEntity<String> handleClientException(BadRequestException ex) {
     log.error("Exception caught in handleClientException :  {} ", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+    log.info("ConstraintViolationException : {}", e.getMessage(), e);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
   }
 
 
