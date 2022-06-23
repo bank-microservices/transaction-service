@@ -16,7 +16,7 @@ spring:
 
 service:
   client:
-    uri: http://localhost:8081/api/client
+    uri: http://localhost:8081/api/v1/client
   account:
     uri: http://localhost:8082/api/v1/account
   credit:
