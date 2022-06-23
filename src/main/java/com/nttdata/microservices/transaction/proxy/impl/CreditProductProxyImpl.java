@@ -27,10 +27,12 @@ public class CreditProductProxyImpl implements CreditProductProxy {
   private static final String STATUS_CODE = "Status code : {}";
   private final WebClient webClient;
 
-  public CreditProductProxyImpl(@Value("${service.credit.uri}") String url) {
-    this.webClient = WebClient.builder()
+  public CreditProductProxyImpl(@Value("${service.credit.uri}") String url,
+                                WebClient.Builder loadBalancedWebClientBuilder) {
+    this.webClient = loadBalancedWebClientBuilder
         .clientConnector(RestUtils.getDefaultClientConnector())
-        .baseUrl(url).build();
+        .baseUrl(url)
+        .build();
   }
 
   @Override
@@ -58,7 +60,7 @@ public class CreditProductProxyImpl implements CreditProductProxy {
     return this.webClient.get()
         .uri("/account-number/{number}", accountNumber)
         .retrieve()
-        .bodyToMono(CreditProduct.class)
+        .bodyToMono(CreditProduct.class).log()
         .map(setCreditProductType(CreditProductType.CREDIT));
   }
 
@@ -71,7 +73,7 @@ public class CreditProductProxyImpl implements CreditProductProxy {
         .onStatus(HttpStatus::is4xxClientError,
             clientResponse -> this.applyError4xx(clientResponse, errorMessage))
         .onStatus(HttpStatus::is5xxServerError, this::applyError5xx)
-        .bodyToMono(CreditProduct.class)
+        .bodyToMono(CreditProduct.class).log()
         .map(setCreditProductType(CreditProductType.CREDIT_CARD));
   }
 
@@ -108,14 +110,6 @@ public class CreditProductProxyImpl implements CreditProductProxy {
       creditProduct.setCreditProductType(credit);
       return creditProduct;
     };
-  }
-
-  private Mono<? extends Throwable> applyError4xxEmpty(ClientResponse clientResponse,
-                                                       String errorMessage) {
-    if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
-      return Mono.empty();
-    }
-    return applyError4xx(clientResponse, errorMessage);
   }
 
   private Mono<? extends Throwable> applyError4xx(ClientResponse clientResponse,
